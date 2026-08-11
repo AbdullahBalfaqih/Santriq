@@ -265,7 +265,7 @@ export default function Home() {
 
   const getProvider = () => {
     if (walletProvider) {
-      return new ethers.BrowserProvider(walletProvider);
+      return new ethers.BrowserProvider(walletProvider as any);
     }
     if (typeof window !== 'undefined' && (window as any).ethereum) {
       return new ethers.BrowserProvider((window as any).ethereum);
