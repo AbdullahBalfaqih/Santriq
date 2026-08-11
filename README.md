@@ -91,14 +91,14 @@ Sentriq leverages Flare as its core underlying blockchain infrastructure due to 
 
 ```mermaid
 graph TD
-    A[User Query / Voice Input] --> B[Sentriq Web Interface]
-    B --> C{Intent Parser}
-    C -->|Audit Request| D[OpenRouter LLM & TEE Security Engine]
-    C -->|Transfer Request| E[Direct Web3 Provider Signature]
-    C -->|@ Mention Alias| F[Shortcut Resolution Engine]
-    D --> G[Flare Data Connector / FTSO v2]
-    G --> H[On-Chain Audit Verification]
-    H --> I[ScamGuardian Smart Contract - Coston2]
+    A["User Query / Voice Input"] --> B["Sentriq Web Interface"]
+    B --> C{"Intent Parser"}
+    C -->|"Audit Request"| D["OpenRouter LLM & TEE Security Engine"]
+    C -->|"Transfer Request"| E["Direct Web3 Provider Signature"]
+    C -->|"Address Shortcut Alias"| F["Shortcut Resolution Engine"]
+    D --> G["Flare Data Connector / FTSO v2"]
+    G --> H["On-Chain Audit Verification"]
+    H --> I["ScamGuardian Smart Contract - Coston2"]
     E --> I
 ```
 
