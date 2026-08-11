@@ -104,6 +104,44 @@ graph TD
 
 ---
 
+## Repository Structure
+
+```text
+Santriq/
+├── 📁 contracts/                     # Solidity Smart Contracts for Flare Network
+│   ├── 📄 ScamGuardian.sol           # Main Security Attestation & Vault Contract
+│   └── 📄 IFtsoRegistry.sol          # Flare FTSO v2 Oracle Interface
+├── 📁 frontend/                      # Next.js 15 Web Application & UI System
+│   ├── 📁 src/
+│   │   ├── 📁 app/
+│   │   │   ├── 📁 SantriqAI/         # Core Sentriq AI Agent Dashboard Page & CSS
+│   │   │   │   ├── 📄 page.tsx       # Interactive AI Chat, Voice & Web3 Actions
+│   │   │   │   └── 📄 SantriqAI.css  # Frameless Apple-grade Design System
+│   │   │   ├── 📁 api/               # Serverless Security API Endpoints
+│   │   │   │   ├── 📁 audit/         # Smart Contract Vulnerability Analyzer API
+│   │   │   │   ├── 📁 chat/          # OpenRouter Conversational AI Route
+│   │   │   │   ├── 📁 scan-wallet/   # ERC-20 Dangerous Approval Scanner API
+│   │   │   │   └── 📁 indexer/       # On-Chain Audit Indexer API
+│   │   │   ├── 📄 ReownSDKProvider.tsx # Web3 Modal & WalletConnect Provider
+│   │   │   ├── 📄 BuilderLanding.tsx   # Enterprise Landing Page
+│   │   │   ├── 📄 layout.tsx         # Root Layout with Custom Favicon
+│   │   │   └── 📄 globals.css        # Global CSS & Scrollbar Suppression
+│   │   └── 📁 lib/                   # Smart Contract ABIs & Utilities
+│   └── 📁 public/                    # Brand Assets & Screenshots
+├── 📁 confidential-compute/          # TEE Enclave Security Agent
+│   ├── 📁 tee-agent/                 # TEE Confidential Worker Script
+│   │   ├── 📄 agent.py               # TEE Security Scanning Worker
+│   │   └── 📄 start.bat              # Local TEE Worker Launcher
+│   └── 📄 requirements.txt           # Python TEE Dependencies
+├── 📁 scripts/                       # Deployment & Network Scripts
+│   └── 📄 deploy.ts                  # Flare Coston2 Testnet Deployment Script
+├── 📄 hardhat.config.ts              # Hardhat Configuration for Flare Coston2
+├── 📄 README.md                      # Project Documentation
+└── 📄 LICENSE                        # MIT License
+```
+
+---
+
 ## Technical Comparison
 
 | Security Capability | Standard Block Explorers | Traditional Audit Scanners | Sentriq Protocol |
