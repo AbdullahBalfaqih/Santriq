@@ -159,7 +159,7 @@ export default function Home() {
   }, []);
 
   // Past Conversations List
-  const [historyItems] = useState([
+  const [historyItems, setHistoryItems] = useState([
     { id: 1, title: "USDC Unlimited Approval Check", date: "10 mins ago" },
     { id: 2, title: "Flare Coston2 ERC20 Token Audit", date: "2 hours ago" },
     { id: 3, title: "Phishing Airdrop URL Scan", date: "Yesterday" }
