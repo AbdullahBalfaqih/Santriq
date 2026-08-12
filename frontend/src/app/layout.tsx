@@ -16,7 +16,10 @@ export const metadata: Metadata = {
   title: "Sentriq Protocol | Web3 Security AI Agent",
   description: "AI-Powered Smart Contract & Wallet Security on Flare Blockchain",
   icons: {
-    icon: "/goldlogo.png",
+    icon: [
+      { url: "/goldlogo.png", href: "/goldlogo.png" },
+      { url: "/icon.png", href: "/icon.png" }
+    ],
     shortcut: "/goldlogo.png",
     apple: "/goldlogo.png",
   },
@@ -31,6 +34,7 @@ export default function RootLayout({
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <head>
         <link rel="icon" href="/goldlogo.png" type="image/png" sizes="any" />
+        <link rel="shortcut icon" href="/goldlogo.png" type="image/png" />
         <link rel="apple-touch-icon" href="/goldlogo.png" />
       </head>
       <body>{children}</body>
