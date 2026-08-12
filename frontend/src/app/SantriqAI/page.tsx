@@ -116,7 +116,7 @@ export default function Home() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
-  const animFrameRef = useRef<number>(0);
+  const animFrameRef = useRef<number | null>(null);
   const recognitionRef = useRef<any>(null);
 
   // Rotating words list with smooth state-driven fade transitions
