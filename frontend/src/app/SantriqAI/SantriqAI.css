@@ -282,15 +282,15 @@
   cursor: pointer;
   backdrop-filter: blur(10px);
   transition: all 0.2s ease;
-  box-shadow: 0 4px 15px rgba(234, 88, 12, 0.5) !important;
+  box-shadow: none !important;
   position: relative;
   z-index: 100;
 }
 
 .icon-btn:hover {
   background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
-  transform: scale(1.06);
-  box-shadow: 0 6px 20px rgba(234, 88, 12, 0.7) !important;
+  transform: scale(1.04);
+  box-shadow: none !important;
 }
 
 .icon-btn svg, .attach-btn svg, .action-btn svg, .toggle-sidebar-btn svg {
@@ -431,7 +431,7 @@
   cursor: pointer;
   flex-shrink: 0;
   transition: all 0.25s ease;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  box-shadow: none !important;
 }
 
 .action-card:hover {

@@ -2508,3 +2508,100 @@
   margin-bottom: 12px !important;
   text-align: center !important;
 }
+
+/* Flat Button Overrides - Remove All Shadows and Glow Halos */
+.landing-root button,
+.landing-root .cta-button,
+.landing-root .btn-primary,
+.landing-root .get-started-btn,
+.landing-root .navbar .cta-button {
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+}
+
+/* Mobile Responsive Adjustments for Landing Page */
+@media (max-width: 768px) {
+  /* Navbar logo & Get Started button on mobile */
+  .landing-root .navbar-inner {
+    padding: 10px 14px !important;
+    gap: 8px !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
+  .landing-root .brand-link {
+    margin-left: 0 !important;
+  }
+
+  .landing-root .navbar .cta-button, 
+  .landing-root .navbar-inner .cta-button {
+    padding: 8px 14px !important;
+    font-size: 12px !important;
+    white-space: nowrap !important;
+    max-width: 140px !important;
+    box-shadow: none !important;
+  }
+
+  /* Grid Layouts - Stack vertically on mobile */
+  .landing-root .features-top-grid,
+  .landing-root .features-bottom-grid,
+  .landing-root .platform-top-grid,
+  .landing-root .platform-bottom-grid,
+  .landing-root .platform-grid,
+  .landing-root .ticker-grid,
+  .landing-root .platform-cards,
+  .landing-root .dash-grid,
+  .landing-root .stats-grid,
+  .landing-root .about-cards {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+    width: 100% !important;
+  }
+
+  /* Feature Main Card (Real-Time Fraud Detection) stack text & preview vertically */
+  .landing-root .feature-main-card {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 20px !important;
+    padding: 24px 18px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .landing-root .feature-content {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .landing-root .feature-preview {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Vertical Cards ("Built for a Decentralized Future") full width on mobile */
+  .landing-root .platform-card {
+    width: 100% !important;
+    min-width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 24px 18px !important;
+  }
+
+  .landing-root .hero-title {
+    font-size: 32px !important;
+    line-height: 1.2 !important;
+  }
+
+  .landing-root .heading-lg {
+    font-size: 26px !important;
+    line-height: 1.2 !important;
+  }
+
+  .landing-root .hero-section {
+    padding-top: 130px !important;
+  }
+}
