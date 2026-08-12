@@ -1126,7 +1126,7 @@ export default function Home() {
                     {msg.sender === 'user' ? (
                       <>
                         <div className="chat-bubble user">
-                          {msg.text.startsWith("🎙️ [Voice Audio Note]:") ? (
+                          {msg.text?.startsWith("🎙️ [Voice Audio Note]:") ? (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#ea580c', fontWeight: 600, fontSize: '12px' }}>
                                 <span>🎙️</span> Voice Audio Note
