@@ -214,13 +214,14 @@ export default function Home() {
       clearTimeout(silenceTimerRef.current);
       silenceTimerRef.current = null;
     }
-    const textToSend = pendingVoiceText.trim() || data.trim() || "فحص أمان صوتي للمحفظة والعقود";
+
+    const spokenText = pendingVoiceText.trim() || data.trim();
     stopRecording();
     setData("");
     setPendingVoiceText("");
 
-    if (textToSend) {
-      const voiceFormattedText = `🎙️ [Voice Audio Note]: ${textToSend}`;
+    if (spokenText) {
+      const voiceFormattedText = `🎙️ [Voice Audio Note]: ${spokenText}`;
       handleAnalyze(voiceFormattedText);
     }
   };
@@ -267,7 +268,8 @@ export default function Home() {
           const recognition = new SpeechRecognition();
           recognition.continuous = true;
           recognition.interimResults = true;
-          recognition.lang = "ar-SA";
+          const userLang = navigator.language || "en-US";
+          recognition.lang = userLang.includes("ar") ? "ar-SA" : "en-US";
           recognitionRef.current = recognition;
 
           let accumulatedText = "";
