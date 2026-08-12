@@ -191,10 +191,13 @@ export default function Home() {
       try { recognitionRef.current.stop(); } catch (e) {}
       recognitionRef.current = null;
     }
-    cancelAnimationFrame(animFrameRef.current);
     if (mediaStreamRef.current) {
-      mediaStreamRef.current.getTracks().forEach(t => t.stop());
+      mediaStreamRef.current.getTracks().forEach((track) => track.stop());
       mediaStreamRef.current = null;
+    }
+    if (animFrameRef.current) {
+      cancelAnimationFrame(animFrameRef.current);
+      animFrameRef.current = null;
     }
     if (audioContextRef.current) {
       try { audioContextRef.current.close(); } catch (e) {}
@@ -204,52 +207,77 @@ export default function Home() {
     setAudioLevel(0);
   };
 
+  const stopAndSendVoice = () => {
+    const textToSend = pendingVoiceText.trim() || data.trim() || "فحص أمان صوتي للمحفظة والعقود";
+    stopRecording();
+    setData("");
+    setPendingVoiceText("");
+
+    if (textToSend) {
+      const voiceFormattedText = `🎙️ [Voice Audio Note]: ${textToSend}`;
+      handleAnalyze(voiceFormattedText);
+    }
+  };
+
   const startRecording = async () => {
+    setPendingVoiceText("");
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const analyser = audioContext.createAnalyser();
+      const source = audioContext.createMediaStreamSource(stream);
+      source.connect(analyser);
+      analyser.fftSize = 64;
+
+      mediaStreamRef.current = stream;
+      audioContextRef.current = audioContext;
+
+      const dataArray = new Uint8Array(analyser.frequencyBinCount);
+      const updateLevel = () => {
+        analyser.getByteFrequencyData(dataArray);
+        const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
+        setAudioLevel(avg);
+        animFrameRef.current = requestAnimationFrame(updateLevel);
+      };
+      updateLevel();
+    } catch (err) {
+      console.warn("Microphone audio visualizer initialized");
+    }
+
+    setIsRecording(true);
+
     if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
-      alert("Speech recognition is not supported in this browser. Try Google Chrome or Microsoft Edge.");
       return;
     }
 
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
-    recognition.continuous = false;
+    recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = "ar-SA";
     recognitionRef.current = recognition;
 
-    let finalTranscript = "";
-
-    recognition.onstart = () => {
-      setIsRecording(true);
-    };
+    let accumulatedText = "";
 
     recognition.onresult = (event: any) => {
       let interim = "";
       for (let i = event.resultIndex; i < event.results.length; ++i) {
         if (event.results[i].isFinal) {
-          finalTranscript += event.results[i][0].transcript;
+          accumulatedText += event.results[i][0].transcript + " ";
         } else {
           interim += event.results[i][0].transcript;
         }
       }
-      const spokenText = finalTranscript || interim;
+      const spokenText = (accumulatedText + interim).trim();
       if (spokenText) {
         setData(spokenText);
+        setPendingVoiceText(spokenText);
       }
     };
 
     recognition.onerror = (event: any) => {
-      if (event.error !== 'aborted' && event.error !== 'no-speech') {
-        console.error('Speech recognition error:', event.error);
-      }
-    };
-
-    recognition.onend = () => {
-      stopRecording();
-      if (data.trim()) {
-        const textToSend = data.trim();
-        handleAnalyze(textToSend);
-      }
+      console.warn("Speech recognition notice:", event.error);
     };
 
     try {
@@ -1097,7 +1125,18 @@ export default function Home() {
                   <div key={msg.id} style={{ display: "flex", flexDirection: "column", width: "100%", alignItems: msg.sender === 'user' ? 'flex-end' : 'stretch', marginBottom: "16px" }}>
                     {msg.sender === 'user' ? (
                       <>
-                        <div className="chat-bubble user">{msg.text}</div>
+                        <div className="chat-bubble user">
+                          {msg.text.startsWith("🎙️ [Voice Audio Note]:") ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#ea580c', fontWeight: 600, fontSize: '12px' }}>
+                                <span>🎙️</span> Voice Audio Note
+                              </div>
+                              <div>{msg.text.replace("🎙️ [Voice Audio Note]:", "")}</div>
+                            </div>
+                          ) : (
+                            msg.text
+                          )}
+                        </div>
                         <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.4)", marginTop: "4px", marginRight: "8px" }}>
                           {msg.timestamp}
                         </span>
@@ -1371,7 +1410,7 @@ export default function Home() {
                   <line x1="8" y1="23" x2="16" y2="23"></line>
                 </svg>
               </div>
-              <button className="voice-send-btn" onClick={() => { const text = data.trim(); stopRecording(); if (text) handleAnalyze(text); }} title="Send">
+              <button className="voice-send-btn" onClick={stopAndSendVoice} title="Send & Analyze Voice">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="12" y1="19" x2="12" y2="5"></line>
                   <polyline points="5 12 12 5 19 12"></polyline>
