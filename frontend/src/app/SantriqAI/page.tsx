@@ -22,6 +22,7 @@ export default function Home() {
     id: string;
     sender: 'user' | 'ai';
     text?: string;
+    audioUrl?: string;
     isAnalyzing?: boolean;
     statusText?: string;
     txHash?: string;
@@ -185,11 +186,17 @@ export default function Home() {
   };
 
   const mediaStreamRef = useRef<MediaStream | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
 
   const stopRecording = () => {
     if (recognitionRef.current) {
       try { recognitionRef.current.stop(); } catch (e) {}
       recognitionRef.current = null;
+    }
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      try { mediaRecorderRef.current.stop(); } catch (e) {}
+      mediaRecorderRef.current = null;
     }
     if (mediaStreamRef.current) {
       mediaStreamRef.current.getTracks().forEach((track) => track.stop());
@@ -215,14 +222,23 @@ export default function Home() {
       silenceTimerRef.current = null;
     }
 
+    let audioUrl: string | undefined = undefined;
+    if (audioChunksRef.current && audioChunksRef.current.length > 0) {
+      try {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        audioUrl = URL.createObjectURL(audioBlob);
+      } catch (e) {}
+    }
+
     const spokenText = pendingVoiceText.trim() || data.trim();
     stopRecording();
     setData("");
     setPendingVoiceText("");
 
-    if (spokenText) {
-      const voiceFormattedText = `🎙️ [Voice Audio Note]: ${spokenText}`;
-      handleAnalyze(voiceFormattedText);
+    const textPayload = spokenText || (audioUrl ? "Voice Recording Note" : "");
+    if (textPayload || audioUrl) {
+      const voiceFormattedText = textPayload.startsWith("🎙️") ? textPayload : `🎙️ [Voice Audio Note]: ${textPayload}`;
+      handleAnalyze(voiceFormattedText, audioUrl);
     }
   };
 
@@ -230,11 +246,29 @@ export default function Home() {
     // 1. Instantly show full-screen voice overlay on user click
     setIsRecording(true);
     setPendingVoiceText("");
+    audioChunksRef.current = [];
 
-    // 2. Safely initialize audio visualizer stream
+    // 2. Safely initialize audio visualizer stream & MediaRecorder
     try {
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaStreamRef.current = stream;
+
+        if (typeof MediaRecorder !== "undefined") {
+          try {
+            const mediaRecorder = new MediaRecorder(stream);
+            mediaRecorderRef.current = mediaRecorder;
+            mediaRecorder.ondataavailable = (event) => {
+              if (event.data && event.data.size > 0) {
+                audioChunksRef.current.push(event.data);
+              }
+            };
+            mediaRecorder.start(100);
+          } catch (e) {
+            console.warn("MediaRecorder start notice:", e);
+          }
+        }
+
         const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
         if (AudioCtx) {
           const audioContext = new AudioCtx();
@@ -242,8 +276,6 @@ export default function Home() {
           const source = audioContext.createMediaStreamSource(stream);
           source.connect(analyser);
           analyser.fftSize = 64;
-
-          mediaStreamRef.current = stream;
           audioContextRef.current = audioContext;
 
           const dataArray = new Uint8Array(analyser.frequencyBinCount);
@@ -257,7 +289,7 @@ export default function Home() {
         }
       }
     } catch (err) {
-      console.warn("Microphone audio visualizer notice:", err);
+      console.warn("Microphone audio stream notice:", err);
     }
 
     // 3. Safely initialize speech recognition with auto-send on silence
@@ -288,16 +320,15 @@ export default function Home() {
               setData(spokenText);
               setPendingVoiceText(spokenText);
 
-              // Auto-send 1.6s after user stops talking
+              // Auto-send 1.8s after user stops talking
               if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
               silenceTimerRef.current = setTimeout(() => {
                 stopAndSendVoice();
-              }, 1600);
+              }, 1800);
             }
           };
 
           recognition.onend = () => {
-            // Auto-send when speech engine finishes
             if (pendingVoiceText.trim() || data.trim()) {
               stopAndSendVoice();
             }
@@ -720,10 +751,10 @@ export default function Home() {
   };
 
 
-  const handleAnalyze = async (overrideInput?: string, e?: React.FormEvent) => {
+  const handleAnalyze = async (overrideInput?: string, overrideAudioUrl?: string, e?: React.FormEvent) => {
     if (e) e.preventDefault();
     let currentInput = overrideInput !== undefined ? overrideInput : data;
-    if (!currentInput.trim() && !imageFile) return;
+    if (!currentInput.trim() && !imageFile && !overrideAudioUrl) return;
 
     // Expand @shortcuts (e.g. @mywallet -> 0x0388865e1daf2427De6111cf8548ed1871656180)
     shortcuts.forEach(sc => {
@@ -735,8 +766,14 @@ export default function Home() {
     setIsAnalyzing(true);
     const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    // Append user message
-    const userMsg: Message = { id: Date.now().toString(), sender: 'user', text: currentInput, timestamp };
+    // Append user message with audioUrl
+    const userMsg: Message = {
+      id: Date.now().toString(),
+      sender: 'user',
+      text: currentInput,
+      audioUrl: overrideAudioUrl,
+      timestamp
+    };
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
 
@@ -1154,7 +1191,19 @@ export default function Home() {
                     {msg.sender === 'user' ? (
                       <>
                         <div className="chat-bubble user">
-                          {msg.text?.startsWith("🎙️ [Voice Audio Note]:") ? (
+                          {msg.audioUrl ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '220px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#f97316', fontWeight: 600, fontSize: '12px' }}>
+                                <span>🎙️</span> Voice Audio Note
+                              </div>
+                              <audio src={msg.audioUrl} controls style={{ width: '100%', height: '34px', borderRadius: '20px' }} />
+                              {msg.text && (
+                                <div style={{ fontSize: '13px', opacity: 0.9, marginTop: '2px' }}>
+                                  {msg.text.replace(/^🎙️ \[Voice Audio Note\]:\s*/, "")}
+                                </div>
+                              )}
+                            </div>
+                          ) : msg.text?.startsWith("🎙️ [Voice Audio Note]:") ? (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#ea580c', fontWeight: 600, fontSize: '12px' }}>
                                 <span>🎙️</span> Voice Audio Note

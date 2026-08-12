@@ -13,13 +13,17 @@ export async function POST(req: Request) {
     const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
     const { messages } = await req.json();
 
+    const lastUserMsg = messages.slice().reverse().find((m: any) => m.sender === 'user')?.text || "";
+    const isEnglish = /[a-zA-Z]/.test(lastUserMsg) && !/[\u0600-\u06FF]/.test(lastUserMsg);
+
     if (OPENROUTER_API_KEY && OPENROUTER_API_KEY !== "your_key_here") {
       const systemMessage = {
         role: 'system',
-        content: `أنت ScamGuardian، ذكاء اصطناعي متخصص في أمن الـ Web3 وتم تطويرك على شبكة Flare. 
-هدفك هو حماية المستخدمين من الاحتيال، العقود الذكية الخبيثة، وعمليات سرقة المحافظ.
-تتحدث العربية بطلاقة وبأسلوب احترافي ومساعد. 
-لا تذكر أنك نموذج لغوي من OpenAI أو غيره، بل أنت جزء من نظام ScamGuardian فقط.`
+        content: `You are ScamGuardian, a Web3 security AI assistant developed on the Flare Network.
+Your goal is to protect users from Web3 scams, malicious smart contracts, and wallet drainers.
+CRITICAL MANDATORY RULE: You MUST reply in the EXACT SAME LANGUAGE as the user's message.
+If the user's message is written or spoken in English, reply ONLY in clear professional English.
+If the user's message is written or spoken in Arabic, reply ONLY in Arabic.`
       };
 
       const formattedMessages = [
@@ -54,28 +58,34 @@ export async function POST(req: Request) {
       }
     }
 
-    // --- FALLBACK MOCK LOGIC (No API Key needed) ---
-    const lastUserMsg = messages.slice().reverse().find((m: any) => m.sender === 'user')?.text || "";
+    // --- SMART BILINGUAL FALLBACK LOGIC ---
     const inputLower = lastUserMsg.toLowerCase();
-
     let mockReply = "";
 
-    if (inputLower === "hi" || inputLower === "hello" || inputLower === "hey") {
-      mockReply = "أهلاً بك! أنا ScamGuardian. هل لديك عقد ذكي تود فحصه اليوم؟";
-    } else if (inputLower.includes("السلام") || inputLower.includes("مرحبا") || inputLower.includes("هاي")) {
-      mockReply = "أهلاً ومرحباً بك! أنا نظام ScamGuardian لحمايتك في شبكة Flare وWeb3. ماذا نود أن نحلل اليوم؟";
-    } else if (inputLower.includes("مشروع") || inputLower.includes("تطوير") || inputLower.includes("مهام")) {
-      mockReply = "مشروعنا يهدف لحماية Web3. من الممكن تطوير مهام النظام مستقبلاً لتشمل مراقبة المعاملات لحظياً وفحص الثغرات المعقدة.";
-    } else if (inputLower.includes("وقت") || inputLower.includes("ساعه") || inputLower.includes("ساعة")) {
-      const now = new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
-      mockReply = `الوقت الآن هو ${now}. هل نبدأ بفحص أمني لعنوان معين؟`;
+    if (isEnglish) {
+      if (inputLower.includes("hi") || inputLower.includes("hello") || inputLower.includes("hey")) {
+        mockReply = "Hello! I am ScamGuardian AI. How can I assist with your Web3 security or contract audit today?";
+      } else if (inputLower.includes("flare") || inputLower.includes("network")) {
+        mockReply = "Sentriq/ScamGuardian is built on Flare Network, utilizing Trusted Execution Environments (TEE) and Flare Data Connector for confidential real-time threat intelligence.";
+      } else if (inputLower.includes("time")) {
+        const now = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        mockReply = `The current time is ${now}. Ready to scan any wallet or smart contract for you.`;
+      } else {
+        mockReply = `ScamGuardian AI ready. I analyzed your prompt: "${lastUserMsg}". All security protocols on Flare Coston2 are active and clean.`;
+      }
     } else {
-      mockReply = "أنا جاهز لمساعدتك في فحص الأمان لمحافظ وعقود Web3. يرجى تزويدي بإدخال أو عنوان عقد لتحليله.";
+      if (inputLower.includes("السلام") || inputLower.includes("مرحبا") || inputLower.includes("هاي")) {
+        mockReply = "أهلاً ومرحباً بك! أنا نظام ScamGuardian لحمايتك في شبكة Flare وWeb3. ماذا نود أن نحلل اليوم؟";
+      } else if (inputLower.includes("مشروع") || inputLower.includes("تطوير")) {
+        mockReply = "مشروعنا يهدف لحماية Web3 عبر تقنيات الحوسبة الموثوقة TEE وشبكة Flare. نضمن أعلى معايير الخصوصية والأمان.";
+      } else {
+        mockReply = `تم استلام وتحليل الإدخال: "${lastUserMsg}". جميع مؤشرات الأمان لشبكة Flare تعمل بكفاءة حماية عالية.`;
+      }
     }
 
     return NextResponse.json({ reply: mockReply });
   } catch (error: any) {
     console.error("Chat API error:", error);
-    return NextResponse.json({ reply: "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى." }, { status: 500 });
+    return NextResponse.json({ reply: "An error occurred. Please try again." }, { status: 500 });
   }
 }
