@@ -220,70 +220,77 @@ export default function Home() {
   };
 
   const startRecording = async () => {
+    // 1. Instantly show full-screen voice overlay on user click
+    setIsRecording(true);
     setPendingVoiceText("");
 
+    // 2. Safely initialize audio visualizer stream
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const analyser = audioContext.createAnalyser();
-      const source = audioContext.createMediaStreamSource(stream);
-      source.connect(analyser);
-      analyser.fftSize = 64;
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+        if (AudioCtx) {
+          const audioContext = new AudioCtx();
+          const analyser = audioContext.createAnalyser();
+          const source = audioContext.createMediaStreamSource(stream);
+          source.connect(analyser);
+          analyser.fftSize = 64;
 
-      mediaStreamRef.current = stream;
-      audioContextRef.current = audioContext;
+          mediaStreamRef.current = stream;
+          audioContextRef.current = audioContext;
 
-      const dataArray = new Uint8Array(analyser.frequencyBinCount);
-      const updateLevel = () => {
-        analyser.getByteFrequencyData(dataArray);
-        const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
-        setAudioLevel(avg);
-        animFrameRef.current = requestAnimationFrame(updateLevel);
-      };
-      updateLevel();
-    } catch (err) {
-      console.warn("Microphone audio visualizer initialized");
-    }
-
-    setIsRecording(true);
-
-    if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
-      return;
-    }
-
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = "ar-SA";
-    recognitionRef.current = recognition;
-
-    let accumulatedText = "";
-
-    recognition.onresult = (event: any) => {
-      let interim = "";
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
-        if (event.results[i].isFinal) {
-          accumulatedText += event.results[i][0].transcript + " ";
-        } else {
-          interim += event.results[i][0].transcript;
+          const dataArray = new Uint8Array(analyser.frequencyBinCount);
+          const updateLevel = () => {
+            analyser.getByteFrequencyData(dataArray);
+            const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
+            setAudioLevel(avg);
+            animFrameRef.current = requestAnimationFrame(updateLevel);
+          };
+          updateLevel();
         }
       }
-      const spokenText = (accumulatedText + interim).trim();
-      if (spokenText) {
-        setData(spokenText);
-        setPendingVoiceText(spokenText);
+    } catch (err) {
+      console.warn("Microphone audio visualizer notice:", err);
+    }
+
+    // 3. Safely initialize speech recognition
+    if (typeof window !== "undefined") {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        try {
+          const recognition = new SpeechRecognition();
+          recognition.continuous = true;
+          recognition.interimResults = true;
+          recognition.lang = "ar-SA";
+          recognitionRef.current = recognition;
+
+          let accumulatedText = "";
+
+          recognition.onresult = (event: any) => {
+            let interim = "";
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+              if (event.results[i].isFinal) {
+                accumulatedText += event.results[i][0].transcript + " ";
+              } else {
+                interim += event.results[i][0].transcript;
+              }
+            }
+            const spokenText = (accumulatedText + interim).trim();
+            if (spokenText) {
+              setData(spokenText);
+              setPendingVoiceText(spokenText);
+            }
+          };
+
+          recognition.onerror = (event: any) => {
+            console.warn("Speech recognition notice:", event.error);
+          };
+
+          recognition.start();
+        } catch (e) {
+          console.warn("Speech recognition start notice:", e);
+        }
       }
-    };
-
-    recognition.onerror = (event: any) => {
-      console.warn("Speech recognition notice:", event.error);
-    };
-
-    try {
-      recognition.start();
-    } catch (e) {
-      console.error("Failed to start speech recognition", e);
     }
   };
 
