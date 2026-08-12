@@ -183,7 +183,7 @@
   opacity: 1;
 }
 
-.hero-section {
+.landing-root .hero-section {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -194,7 +194,7 @@
   overflow: hidden;
 }
 
-.hero-section::after {
+.landing-root .hero-section::after {
   content: '';
   position: absolute;
   bottom: 0;
