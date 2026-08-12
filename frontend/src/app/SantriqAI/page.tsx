@@ -207,7 +207,13 @@ export default function Home() {
     setAudioLevel(0);
   };
 
+  const silenceTimerRef = useRef<any>(null);
+
   const stopAndSendVoice = () => {
+    if (silenceTimerRef.current) {
+      clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = null;
+    }
     const textToSend = pendingVoiceText.trim() || data.trim() || "فحص أمان صوتي للمحفظة والعقود";
     stopRecording();
     setData("");
@@ -253,7 +259,7 @@ export default function Home() {
       console.warn("Microphone audio visualizer notice:", err);
     }
 
-    // 3. Safely initialize speech recognition
+    // 3. Safely initialize speech recognition with auto-send on silence
     if (typeof window !== "undefined") {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       if (SpeechRecognition) {
@@ -279,6 +285,19 @@ export default function Home() {
             if (spokenText) {
               setData(spokenText);
               setPendingVoiceText(spokenText);
+
+              // Auto-send 1.6s after user stops talking
+              if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+              silenceTimerRef.current = setTimeout(() => {
+                stopAndSendVoice();
+              }, 1600);
+            }
+          };
+
+          recognition.onend = () => {
+            // Auto-send when speech engine finishes
+            if (pendingVoiceText.trim() || data.trim()) {
+              stopAndSendVoice();
             }
           };
 
