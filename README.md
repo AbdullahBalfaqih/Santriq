@@ -6,30 +6,6 @@ Confidential AI Security Shield & Real-Time Threat Intelligence Agent on the Fla
 
 ---
 
-## Ecosystem Sponsors & Technology Stack
-
-### Hackathon Sponsors & Protocols
-
-| Partner / Sponsor | Protocol Function | Integration Focus |
-| :--- | :--- | :--- |
-| **Flare Network** | Primary Blockchain Infrastructure | FTSO v2 Price Feeds, Flare Data Connector (FDC) State Verification, & Coston2 Testnet Contracts |
-| **Reown AppKit** | Web3 Wallet Infrastructure | Universal WalletConnect Provider, Ethers v6 Adapter, & Multi-Wallet Modal Integration |
-| **OpenRouter AI** | LLM Threat Intelligence Engine | Real-Time Vulnerability Analysis, Natural Language Intent Parsing, & Security Scoring |
-| **Trusted Execution Environment (TEE)** | Confidential Compute Enclave | Mempool Shielding, Private Key Security, & Enclave Security Audit Attestations |
-
-### Core Developer Stack
-
-![Flare Network](https://img.shields.io/badge/Blockchain-Flare%20Coston2-E11D48?style=for-the-badge&logo=polygon&logoColor=white)
-![Reown AppKit](https://img.shields.io/badge/Wallet-Reown%20AppKit-ea580c?style=for-the-badge&logo=walletconnect&logoColor=white)
-![Next.js 15](https://img.shields.io/badge/Frontend-Next.js%2015-000000?style=for-the-badge&logo=next.js&logoColor=white)
-![OpenRouter AI](https://img.shields.io/badge/AI-OpenRouter%20Claude-7C3AED?style=for-the-badge&logo=openai&logoColor=white)
-![Solidity](https://img.shields.io/badge/Contracts-Solidity%200.8.25-363636?style=for-the-badge&logo=solidity&logoColor=white)
-![Hardhat](https://img.shields.io/badge/Toolchain-Hardhat-FFF100?style=for-the-badge&logo=hardhat&logoColor=black)
-![TypeScript](https://img.shields.io/badge/Language-TypeScript%205-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
-![Ethers.js](https://img.shields.io/badge/Library-Ethers.js%20v6-2563EB?style=for-the-badge&logo=ethereum&logoColor=white)
-
----
-
 ## Executive Summary
 
 Sentriq Protocol is an autonomous, confidential Web3 AI agent engineered to protect decentralized finance ecosystems from smart contract exploits, malicious token approvals, phishing schemes, and dynamic market manipulations. 
